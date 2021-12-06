@@ -13,40 +13,55 @@ drop table uf;
 drop table pais;
 
 create table pais (
-    codigo varchar(3) not null,
+    codigo varchar(60) not null,
     nome varchar(60) not null,
     ativo bit default 1 not null,
     primary key (codigo)
 );
 
-insert into pais (codigo, nome) values ("BRA", "BRASIL"), ("COL", "COLOMBIA"), ("ARG", "ARGENTINA");
+insert into pais 
+    (codigo, nome) 
+values 
+    ("BRASIL", "BRASIL"), 
+    ("COLOMBIA", "COLOMBIA"), 
+    ("ARGENTINA", "ARGENTINA");
 
 create table uf (
-    codigo varchar(3) not null,
-    nome varchar(30) not null,
-    pais char(3) not null,
+    codigo varchar(60) not null,
+    nome varchar(60) not null,
+    pais char(60) not null,
     ativo bit default 1 not null,
     foreign key (pais) references pais(codigo),
     primary key (codigo)
 );
 
-insert into uf (codigo, nome, pais) values ("RS", "RIO GRANDE DO SUL", "BRA"), ("COR", "CORDOVA", "ARG");
+insert into uf 
+    (codigo, nome, pais) 
+values 
+    ("RIO_GRANDE_DO_SUL", "RIO GRANDE DO SUL", "BRASIL"), 
+    ("CORDOVA", "CÓRDOVA", "ARGENTINA");
 
 create table cidade (
     codigo integer not null,
-    nome varchar(30) not null,
-    estado char(2) not null,
+    nome varchar(60) not null,
+    uf char(2) not null,
     ativo bit default 1 not null,
-    foreign key (estado) references uf(codigo),
+    foreign key (uf) references uf(codigo),
     primary key (codigo)
 );
 
-insert into cidade (codigo, nome, estado) values (1, "RIO GRANDE", "RS"), (2, "PELOTAS", "RS"), (3, "PORTO ALEGRE", "RS"), (4, "SAO JOSE DO NORTE", "RS");
+insert into cidade 
+    (codigo, nome, uf) 
+values 
+    (1, "RIO GRANDE", "RIO_GRANDE_DO_SUL"), 
+    (2, "PELOTAS", "RIO_GRANDE_DO_SUL"), 
+    (3, "PORTO ALEGRE", "RIO_GRANDE_DO_SUL"), 
+    (4, "SAO JOSE DO NORTE", "RIO_GRANDE_DO_SUL");
 
 create table usuario (
     email varchar(50) not null,
     nome varchar(100) not null,
-    hora_cadastro datetime not null,
+    hora_cadastro timestamp default current_timestamp not null,
     ativo bit default 1 not null,
     data_nascimento date not null,
     genero char(1) not null,
@@ -55,27 +70,42 @@ create table usuario (
     primary key (email)
 );
 
-insert into usuario (email, nome, data_nascimento, genero, cidade, hora_cadastro) values ("VINI@VINI.COM", "VINICUS", "2003-02-13", "M", 1, "2020-01-01 14:21"), ("MARINA@MARINA.COM", "MARINA", "2002-07-07", "F", 1, "2020-02-05 11:21");
-insert into usuario (email, nome, data_nascimento, genero, cidade, hora_cadastro) values ("MARINAFERNANDESS103@GMAIL.COM", "MARINA FERNANDES", "2002-07-07", "F", 1, "2020-01-01 14:25");
+insert into usuario 
+    (email, nome, data_nascimento, genero, cidade, hora_cadastro) 
+values 
+    ("VINI@VINI.COM", "VINICIUS DA SILVA", "2003-02-13", "M", 1, "2020-01-01 14:21"), 
+    ("MARINA@MARINA.COM", "MARINA DA SILVA", "2002-07-07", "F", 1, "2020-02-05 11:21"),
+    ("SABRINA@SABRINA.COM", "SABRINA RAMOS", "2003-05-02", "F", 1, "2020-03-05 11:20");
 
 create table amizade (
     usuario1 varchar(50) not null,
     usuario2 varchar(50) not null,
-    data_hora timestamp not null,
-    ativo default 0 not null,
+    data_hora timestamp default (datetime('now', 'localtime')) not null,
+    ativo default 1 not null,
     foreign key (usuario1) references usuario(email),
     foreign key (usuario2) references usuario(email),
     primary key (usuario1, usuario2)
 );
 
-insert into amizade (usuario1, usuario2, data_hora) values ("VINI@VINI.COM", "MARINA@MARINA.COM", "2021-11-10 15:40");
--- update amizade set ativo = 1 where usuario1 = "VINI@VINI.COM" AND usuario2 = "MARINA@MARINA.COM";
+insert into amizade 
+    (usuario1, usuario2, data_hora) 
+values 
+    ("VINI@VINI.COM", "MARINA@MARINA.COM", "2021-11-10 15:40"), 
+    ("MARINA@MARINA.COM", "VINI@VINI.COM", "2021-11-10 15:40"),
+    ("MARINA@MARINA.COM", "SABRINA@SABRINA.COM", "2021-11-10 15:45"), 
+    ("SABRINA@SABRINA.COM", "MARINA@MARINA.COM", "2021-11-10 15:45");
 
 create table assunto (
     codigo integer not null,
     nome varchar(100) not null,
     primary key(codigo)
 );
+
+
+insert into assunto (codigo, nome) values (1, "triste");
+insert into assunto (codigo, nome) values (2, "feliz");
+insert into assunto (codigo, nome) values (3, "futebol");
+
 
 create table grupo (
     codigo integer not null,
@@ -118,9 +148,11 @@ create table interacao (
     codigo integer not null,
     usuario varchar(50) not null,
     tipo integer not null,
+    hora_post timestamp default (datetime('now', 'localtime')) not null,
     cidade integer not null,
     grupo integer default null,
     conteudo varchar(1000),
+    assunto integer default null,
     referencia integer,
     ativo bit default 1 not null,
     foreign key (referencia) references interacao(codigo),
@@ -130,12 +162,15 @@ create table interacao (
     primary key (codigo)
 );
 
-insert into interacao(codigo, usuario, tipo, cidade, conteudo) values (1, "VINI@VINI.COM", "POST", 1, "Lorem Ipsum
-is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.");
-insert into interacao(codigo, usuario, tipo, cidade, conteudo, referencia) values (2, "MARINA@MARINA.COM", "COMENTARIO", 1, "NUNCA VI", 1);
-insert into interacao(codigo, usuario, tipo, cidade, conteudo, referencia) values (3, "MARINA@MARINA.COM", "REACAO", 1, "GRR", 1);
-insert into interacao(codigo, usuario, tipo, cidade, conteudo) values (4, "MARINAFERNANDESS103@GMAIL.COM", "POST", 1, "TESTE");
 
+insert into interacao
+    (codigo, usuario, tipo, cidade, hora_post, conteudo)
+values
+    (1, "VINI@VINI.COM", "POST", 1, "2021-11-22 15:40", "Lorem Ipsum
+is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.");
+-- insert into interacao(codigo, usuario, tipo, cidade, conteudo, referencia) values (2, "MARINA@MARINA.COM", "COMENTARIO", 1, "NUNCA VI", 1);
+-- insert into interacao(codigo, usuario, tipo, cidade, conteudo, referencia) values (3, "MARINA@MARINA.COM", "REACAO", 1, "GRR", 1);
+-- insert into interacao(codigo, usuario, tipo, cidade, conteudo) values (4, "MARINAFERNANDESS103@GMAIL.COM", "POST", 1, "TESTE");
 
 create table assunto_interacao (
     assunto integer not null,
